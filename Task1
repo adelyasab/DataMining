@@ -1,0 +1,45 @@
+import com.google.gson.JsonElement;
+import com.vk.api.sdk.client.TransportClient;
+import com.vk.api.sdk.client.VkApiClient;
+import com.vk.api.sdk.client.actors.UserActor;
+import com.vk.api.sdk.exceptions.ApiException;
+import com.vk.api.sdk.exceptions.ClientException;
+import com.vk.api.sdk.httpclient.HttpTransportClient;
+import com.vk.api.sdk.objects.groups.GroupsArray;
+import com.vk.api.sdk.objects.users.User;
+
+import java.util.ArrayList;
+import java.util.Scanner;
+import java.util.stream.Collectors;
+
+public class Main {
+
+
+    private static String accessToken = "";
+    private static String serviceToken = "";
+    private static  int userid = 1245;
+
+    public static void main(String[] args) throws ClientException, ApiException {
+        TransportClient transportClient = HttpTransportClient.getInstance();
+        VkApiClient vk = new VkApiClient(transportClient);
+        UserActor actor = new UserActor(userid, accessToken);
+        User user = new User();
+        vk.friends();
+        JsonElement response = vk.execute().code(actor, "return API.wall.get({\"count\": 1})")
+                .execute();
+        response.getAsJsonArray();
+        System.out.println(response);
+        ArrayList<String> interests = new ArrayList<>();
+
+        ArrayList<String> categories = vk.groups().getCatalogInfo(new UserActor(друг, accessToken)).execute().getCategories().stream().map(cat -> cat.toString()).distinct().collect(Collectors.toList());
+        for(int i = 0; i < (categories.size()); i++) {
+            System.out.println((i + 1) + ". " + categories.get(i));
+        }
+        System.out.print("Choose the category you like: ");
+        int catId = Integer.parseInt(new Scanner(System.in).next());
+        ArrayList<Integer> items = (ArrayList<Integer>) vk.friends().get(actor).execute().getItems();
+        GroupsArray groups = vk.users().getSubscriptions(new UserActor(items.get(0), accessToken)).execute().getGroups();
+        System.out.println(groups);
+
+    }
+}
